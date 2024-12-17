@@ -12,19 +12,19 @@ export default class Clock {
    * 上次标记的时间
    * @private
    */
-  #lastTime = 0;
+  private lastTime = 0;
 
   /**
    * 间隔时间
    * @private
    */
-  #elapsedTime = 0;
+  private elapsedTime = 0;
 
   /**
    * 时钟是否启动
    * @private
    */
-  #start = false;
+  private _start = false;
 
   public running: boolean;
 
@@ -40,9 +40,9 @@ export default class Clock {
    * 启动时钟
    */
   start () {
-    if (!this.#start) {
+    if (!this._start) {
       this.reset();
-      this.#start = true;
+      this._start = true;
     }
   }
 
@@ -51,7 +51,7 @@ export default class Clock {
    */
   stop () {
     this.getElapsedTime();
-    this.#start = false;
+    this._start = false;
     this.running = false;
   }
 
@@ -59,8 +59,8 @@ export default class Clock {
    * 重置时钟状态
    */
   reset () {
-    this.#lastTime = now();
-    this.#elapsedTime = 0;
+    this.lastTime = now();
+    this.elapsedTime = 0;
   }
 
   /**
@@ -68,7 +68,7 @@ export default class Clock {
    */
   getElapsedTime () {
     this.getDelta();
-    return this.#elapsedTime;
+    return this.elapsedTime;
   }
 
   /**
@@ -76,15 +76,15 @@ export default class Clock {
    */
   getDelta () {
     let deltaTime = 0;
-    if (this.running && !this.#start) {
+    if (this.running && !this._start) {
       this.start();
       return 0;
     }
-    if (this.#start) {
+    if (this._start) {
       const time = now();
-      deltaTime = (time - this.#lastTime) / 1000;
-      this.#lastTime = time;
-      this.#elapsedTime = this.#elapsedTime + deltaTime;
+      deltaTime = (time - this.lastTime) / 1000;
+      this.lastTime = time;
+      this.elapsedTime = this.elapsedTime + deltaTime;
     }
     return deltaTime;
   }

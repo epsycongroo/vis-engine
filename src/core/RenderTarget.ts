@@ -78,9 +78,9 @@ export interface RenderTargetOptions extends ResourceOptions {
  * ```
  */
 export default class RenderTarget extends Resource<RenderTargetOptions> {
-  #textures: Map<any, any>;
+  private _textures: Map<any, any>;
 
-  #renderBuffers: Map<any, any>;
+  private _renderBuffers: Map<any, any>;
 
   public depth: boolean;
 
@@ -112,17 +112,17 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
   /**
    * 清屏颜色配置；因为在我们在指定多个关联对象时，可能每个关联对象需要的清屏颜色不一致。
    */
-  #clearColors: [number, number, number, number][];
+  private _clearColors: [number, number, number, number][];
 
   /**
    * 清除深度缓冲区，深度值默认是 `1`。
    */
-  #clearDepth: number;
+  private _clearDepth: number;
 
   /**
    * 清除模版缓冲区，默认值为`0`。
    */
-  #clearStencil: number;
+  private _clearStencil: number;
 
   /**
    * @param renderer `Renderer` 对象
@@ -137,8 +137,8 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
       ...options,
     });
 
-    this.#renderBuffers = new Map();
-    this.#textures = new Map();
+    this._renderBuffers = new Map();
+    this._textures = new Map();
     this.depth = Boolean(options.depth);
     /**
      * 在 `webgl1` 需要开启 `WEBGL_draw_buffers` 扩展
@@ -230,7 +230,7 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
   }
 
   get texture() {
-    return this.#textures.values().next().value;
+    return this._textures.values().next().value;
   }
 
   /**
@@ -238,14 +238,14 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
    * @param colors
    */
   set clearColors(colors) {
-    this.#clearColors = colors;
+    this._clearColors = colors;
   }
 
   /**
    * 获取清屏颜色值
    */
   get clearColors() {
-    return this.#clearColors;
+    return this._clearColors;
   }
 
   /**
@@ -253,14 +253,14 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
    * @param depth 深度值
    */
   set clearDepth(depth) {
-    this.#clearDepth = depth;
+    this._clearDepth = depth;
   }
 
   /**
    * 获取深度缓冲区的深度值
    */
   get clearDepth() {
-    return this.#clearDepth;
+    return this._clearDepth;
   }
 
   /**
@@ -268,14 +268,14 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
    * @param stencil 模版缓冲区默认值
    */
   set clearStencil(stencil) {
-    this.#clearStencil = stencil;
+    this._clearStencil = stencil;
   }
 
   /**
    * 获取缓冲区的默认值
    */
   get clearStencil() {
-    return this.#clearStencil;
+    return this._clearStencil;
   }
 
   /**
@@ -283,20 +283,20 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
    * @param attachments
    */
   create(attachments: Attachment[]) {
-    this.#clearColors = [];
-    this.#clearDepth = 1;
-    this.#clearStencil = 0;
+    this._clearColors = [];
+    this._clearDepth = 1;
+    this._clearStencil = 0;
     for (const attachment of attachments) {
       const attach = attachment[0];
       const target = attachment[1];
       if (target instanceof RenderBuffer) {
-        this.#renderBuffers.set(attach, target);
+        this._renderBuffers.set(attach, target);
       } else if (target instanceof Texture) {
-        this.#textures.set(attach, target);
+        this._textures.set(attach, target);
         this.drawBuffers.push(attach);
       }
       const i = attach - this.gl.COLOR_ATTACHMENT0;
-      this.#clearColors[i] = [0, 0, 0, 0];
+      this._clearColors[i] = [0, 0, 0, 0];
     }
 
     if (this.options.color! > 1) {
@@ -321,7 +321,7 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
     /**
      * 将渲染缓冲区关联到帧缓冲区
      */
-    this.#renderBuffers.forEach((rbo, attachment) => {
+    this._renderBuffers.forEach((rbo, attachment) => {
       this.gl.framebufferRenderbuffer(
         this.gl.FRAMEBUFFER,
         attachment,
@@ -333,7 +333,7 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
     /**
      * 将纹理缓冲区与帧缓冲区关联
      */
-    this.#textures.forEach((texture, attachment) => {
+    this._textures.forEach((texture, attachment) => {
       this.gl.framebufferTexture2D(
         this.gl.FRAMEBUFFER,
         attachment,
@@ -377,13 +377,13 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
       this.gl.clearColor(color[0], color[1], color[2], color[3]);
       flags |= this.gl.COLOR_BUFFER_BIT;
     }
-    if (isNumber(this.#clearDepth)) {
-      this.gl.clearDepth(this.#clearDepth);
+    if (isNumber(this._clearDepth)) {
+      this.gl.clearDepth(this._clearDepth);
       flags |= this.gl.DEPTH_BUFFER_BIT;
     }
 
-    if (isNumber(this.#clearStencil)) {
-      this.gl.clearStencil(this.#clearStencil);
+    if (isNumber(this._clearStencil)) {
+      this.gl.clearStencil(this._clearStencil);
       flags |= this.gl.STENCIL_BUFFER_BIT;
     }
 
@@ -392,7 +392,7 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
   }
 
   getTexture(key) {
-    return this.#textures.get(key);
+    return this._textures.get(key);
   }
 
   /**
@@ -404,7 +404,7 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
     if (this.width !== width || this.height !== height) {
       this.width = width;
       this.height = height;
-      this.#textures.forEach((texture: Texture) => {
+      this._textures.forEach((texture: Texture) => {
         if (texture.width !== width || texture.height !== height) {
           texture.width = width;
           texture.height = height;
@@ -412,7 +412,7 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
           texture.update();
         }
       });
-      this.#renderBuffers.forEach((rbo) => {
+      this._renderBuffers.forEach((rbo) => {
         rbo.resize(width, height);
       });
       this.viewport.set(0, 0, width, height);
@@ -445,10 +445,10 @@ export default class RenderTarget extends Resource<RenderTargetOptions> {
    * - 销毁帧缓冲区
    */
   destroy() {
-    this.#textures.forEach((texture: Texture) => {
+    this._textures.forEach((texture: Texture) => {
       texture.destroy();
     });
-    this.#renderBuffers.forEach((buffer) => {
+    this._renderBuffers.forEach((buffer) => {
       buffer.destroy();
     });
     this.deleteHandle();

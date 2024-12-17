@@ -45,9 +45,9 @@ function addLineNumbers(string: string) {
 }
 
 export class Shader extends Resource<ResourceOptions> {
-  #shaderType: ShaderType;
+  private _shaderType: ShaderType;
 
-  #includes: {
+  private _includes: {
     [key: string]: string;
   };
 
@@ -59,8 +59,8 @@ export class Shader extends Resource<ResourceOptions> {
       name: getShaderName(sourceCode) || genShaderName(getTypeName(renderer, shaderType)),
     });
     console.assert(typeof sourceCode === 'string', ERR_SOURCE);
-    this.#includes = includes;
-    this.#shaderType = shaderType;
+    this._includes = includes;
+    this._shaderType = shaderType;
     this.sourceCode = this.injectShaderModule(sourceCode, includes || {}).replace(
       /\n\n+/gm,
       '\n\n',
@@ -81,7 +81,7 @@ export class Shader extends Resource<ResourceOptions> {
 
   createShader(source = this.source) {
     let s = source.replace(/#include </g, '#glsl_include <');
-    s = this.injectShaderModule(s, this.#includes || {}).replace(/\n\n+/gm, '\n\n');
+    s = this.injectShaderModule(s, this._includes || {}).replace(/\n\n+/gm, '\n\n');
     this.gl.shaderSource(this.handle, s);
     this.gl.compileShader(this.handle);
     if (!this.gl.getShaderParameter(this.handle, this.gl.COMPILE_STATUS)) {
@@ -96,7 +96,7 @@ export class Shader extends Resource<ResourceOptions> {
   }
 
   get shaderType() {
-    return this.#shaderType;
+    return this._shaderType;
   }
 
   getSource() {

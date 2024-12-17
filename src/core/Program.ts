@@ -323,15 +323,15 @@ export default class Program extends Resource<ProgramOptions> {
 
   public uniforms: Uniforms;
 
-  #uniformLocations: Map<any, any>;
+  private _uniformLocations: Map<any, any>;
 
-  #attributeLocations: Map<any, any>;
+  private _attributeLocations: Map<any, any>;
 
-  #vs: VertexShader;
+  private _vs: VertexShader;
 
-  #fs: FragmentShader;
+  private _fs: FragmentShader;
 
-  #renderState: Partial<ProgramRenderState>;
+  private _renderState: Partial<ProgramRenderState>;
 
   constructor(renderer, options: Partial<ProgramOptions> = {} as ProgramOptions) {
     super(renderer, options);
@@ -365,11 +365,11 @@ export default class Program extends Resource<ProgramOptions> {
       throw new Error(`Program: ${this.id}：must provide vertexShader and fragmentShader`);
     }
 
-    this.#vs = typeof vertexShader === 'string' ? new VertexShader(renderer, parseShader(vertexShader, defs), includes) : vertexShader;
-    this.#fs = typeof fragmentShader === 'string' ? new FragmentShader(renderer, parseShader(fragmentShader, defs), includes) : fragmentShader;
+    this._vs = typeof vertexShader === 'string' ? new VertexShader(renderer, parseShader(vertexShader, defs), includes) : vertexShader;
+    this._fs = typeof fragmentShader === 'string' ? new FragmentShader(renderer, parseShader(fragmentShader, defs), includes) : fragmentShader;
 
-    this.gl.attachShader(this.handle, this.#vs.handle);
-    this.gl.attachShader(this.handle, this.#fs.handle);
+    this.gl.attachShader(this.handle, this._vs.handle);
+    this.gl.attachShader(this.handle, this._fs.handle);
     this.gl.linkProgram(this.handle);
     this.gl.validateProgram(this.handle);
     if (!this.gl.getProgramParameter(this.handle, this.gl.LINK_STATUS)) {
@@ -382,7 +382,7 @@ export default class Program extends Resource<ProgramOptions> {
 
     this.uniforms = uniforms;
 
-    this.#renderState = {
+    this._renderState = {
       blending,
       cullFace,
       frontFace,
@@ -393,21 +393,21 @@ export default class Program extends Resource<ProgramOptions> {
       blendEquation,
     };
 
-    this.#uniformLocations = new Map();
-    this.#attributeLocations = new Map();
+    this._uniformLocations = new Map();
+    this._attributeLocations = new Map();
 
-    this.#assignUniforms(uniforms);
+    this.assignUniforms(uniforms);
 
-    this.#assignAttributes();
+    this.assignAttributes();
     if (transparent && !blendFunc?.src) {
       if (this.renderer.premultipliedAlpha) {
-        this.#renderState.blendFunc = {
+        this._renderState.blendFunc = {
           ...blendFunc,
           src: this.gl.ONE,
           dst: this.gl.ONE_MINUS_SRC_ALPHA,
         };
       } else {
-        this.#renderState.blendFunc = {
+        this._renderState.blendFunc = {
           ...blendFunc,
           src: this.gl.SRC_ALPHA,
           dst: this.gl.ONE_MINUS_SRC_ALPHA,
@@ -417,25 +417,25 @@ export default class Program extends Resource<ProgramOptions> {
   }
 
   get uniformLocations() {
-    return this.#uniformLocations;
+    return this._uniformLocations;
   }
 
   get attributeLocations() {
-    return this.#attributeLocations;
+    return this._attributeLocations;
   }
 
   /**
    * 获取 `VertexShader` 对象
    */
   get vertexShader() {
-    return this.#vs;
+    return this._vs;
   }
 
   /**
    * 获取 `FragmentShader` 对象
    */
   get fragmentShader() {
-    return this.#fs;
+    return this._fs;
   }
 
   /**
@@ -449,7 +449,7 @@ export default class Program extends Resource<ProgramOptions> {
       this.rendererState.currentProgramId = this.id;
     }
 
-    this.#uniformLocations.forEach((location, activeUniform) => {
+    this._uniformLocations.forEach((location, activeUniform) => {
       const name = activeUniform.name;
 
       const uniform = this.uniforms[name];
@@ -502,21 +502,21 @@ export default class Program extends Resource<ProgramOptions> {
    */
   setStates(states: Partial<ProgramRenderState>, merge = true) {
     if (!merge) {
-      this.#renderState = states;
+      this._renderState = states;
     } else {
-      this.#renderState = {
-        ...this.#renderState,
+      this._renderState = {
+        ...this._renderState,
         ...omit(states, ['blendFunc', 'blendEquation']),
       } as ProgramRenderState;
       if (states.blendFunc) {
-        this.#renderState.blendFunc = {
-          ...this.#renderState.blendFunc,
+        this._renderState.blendFunc = {
+          ...this._renderState.blendFunc,
           ...states.blendFunc,
         };
       }
       if (states.blendEquation) {
-        this.#renderState.blendEquation = {
-          ...this.#renderState.blendEquation,
+        this._renderState.blendEquation = {
+          ...this._renderState.blendEquation,
           ...states.blendEquation,
         };
       }
@@ -524,7 +524,7 @@ export default class Program extends Resource<ProgramOptions> {
   }
 
   applyState() {
-    this.rendererState.apply(this.#renderState);
+    this.rendererState.apply(this._renderState);
   }
 
   /**
@@ -560,7 +560,7 @@ export default class Program extends Resource<ProgramOptions> {
     this.gl.deleteProgram(this.handle);
   }
 
-  #assignUniforms(uniforms = {}) {
+  private assignUniforms(uniforms = {}) {
     const numUniforms = this.gl.getProgramParameter(this.handle, this.gl.ACTIVE_UNIFORMS);
     for (let i = 0; i < numUniforms; i++) {
       const uniformInfo = this.gl.getActiveUniform(this.handle, i);
@@ -586,11 +586,11 @@ export default class Program extends Resource<ProgramOptions> {
         uniformData.value = uniforms[name].value;
       }
       this.uniforms[name] = uniformData;
-      this.#uniformLocations.set(uniformInfo, uniformData);
+      this._uniformLocations.set(uniformInfo, uniformData);
     }
   }
 
-  #assignAttributes() {
+  private assignAttributes() {
     const numAttribs = this.gl.getProgramParameter(this.handle, this.gl.ACTIVE_ATTRIBUTES);
     const locations: string[] = [];
     for (let i = 0; i < numAttribs; i++) {
@@ -598,7 +598,7 @@ export default class Program extends Resource<ProgramOptions> {
       if (!attribInfo) break;
       const location = this.gl.getAttribLocation(this.handle, attribInfo.name);
       locations[location] = attribInfo.name;
-      this.#attributeLocations.set(attribInfo, location);
+      this._attributeLocations.set(attribInfo, location);
     }
     this.attributeOrder = locations.join('');
   }

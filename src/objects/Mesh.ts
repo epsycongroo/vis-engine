@@ -102,17 +102,17 @@ export default class Mesh extends Object3D {
 
   public renderer: Renderer;
 
-  #id: string;
+  private _id: string;
 
-  #lastMode: GLenum;
+  private _lastMode: GLenum;
 
-  #geometry: Geometry;
+  private _geometry: Geometry;
 
-  #program: Program;
+  private _program: Program;
 
-  #wireframe: boolean;
+  private _wireframe: boolean;
 
-  #wireframeGeometry: Geometry;
+  private _wireframeGeometry: Geometry;
 
   /**
    * @param renderer 渲染器
@@ -132,16 +132,16 @@ export default class Mesh extends Object3D {
     this.renderOrder = opts.renderOrder;
     this.frustumCulled = opts.frustumCulled;
     this.zDepth = 0;
-    this.#id = opts.id || uid('mesh');
-    this.#geometry = opts.geometry;
-    this.#program = opts.program;
-    this.#wireframe = Boolean(opts.wireframe);
+    this._id = opts.id || uid('mesh');
+    this._geometry = opts.geometry;
+    this._program = opts.program;
+    this._wireframe = Boolean(opts.wireframe);
     this.mode = opts.mode;
-    this.#lastMode = opts.mode;
+    this._lastMode = opts.mode;
 
-    if (this.#wireframe) {
+    if (this._wireframe) {
       this.mode = this.gl.LINES;
-      this.updateWireframeGeometry(this.#wireframe);
+      this.updateWireframeGeometry(this._wireframe);
     }
   }
 
@@ -149,21 +149,21 @@ export default class Mesh extends Object3D {
    * 获取当前 `Mesh` 的 `id`
    */
   get id() {
-    return this.#id;
+    return this._id;
   }
 
   /**
    * 获取当前 `Mesh` 的几何体信息
    */
   get geometry() {
-    return this.#wireframe ? this.#wireframeGeometry : this.#geometry;
+    return this._wireframe ? this._wireframeGeometry : this._geometry;
   }
 
   /**
    * 获取当前 `Mesh` 的 `program` 对象
    */
   get program() {
-    return this.#program;
+    return this._program;
   }
 
   /**
@@ -171,18 +171,18 @@ export default class Mesh extends Object3D {
    * @param wireframe
    */
   set wireframe(wireframe: boolean) {
-    this.mode = wireframe ? this.gl.LINES : this.#lastMode;
+    this.mode = wireframe ? this.gl.LINES : this._lastMode;
 
-    this.#wireframe = wireframe;
+    this._wireframe = wireframe;
 
-    this.updateWireframeGeometry(this.#wireframe);
+    this.updateWireframeGeometry(this._wireframe);
   }
 
   /**
    * 获取是否是网格渲染
    */
   get wireframe() {
-    return this.#wireframe;
+    return this._wireframe;
   }
 
   /**
@@ -231,19 +231,19 @@ export default class Mesh extends Object3D {
    * @param force 是否强制更新
    */
   updateWireframeGeometry(wireframe, force = false) {
-    if (this.#geometry && (force || !this.#wireframeGeometry)) {
-      if (this.#wireframeGeometry) {
-        this.#wireframeGeometry.destroy();
+    if (this._geometry && (force || !this._wireframeGeometry)) {
+      if (this._wireframeGeometry) {
+        this._wireframeGeometry.destroy();
       }
 
-      const attributes = this.#geometry.attributes;
+      const attributes = this._geometry.attributes;
 
       const positionArray = attributes.get('position')?.data as DataType;
-      const indexAttribute = this.#geometry.index?.data;
+      const indexAttribute = this._geometry.index?.data;
       const numIndices = indexAttribute ? indexAttribute.length : Math.floor(positionArray.length / 3);
       const index = [];
 
-      if (this.#geometry.index) {
+      if (this._geometry.index) {
         if (indexAttribute) {
           getWireframeIndex(positionArray, index, numIndices, indexAttribute as (Uint32Array | Uint16Array));
         }
@@ -253,8 +253,8 @@ export default class Mesh extends Object3D {
 
       const indices = index.length > 65536 ? new Uint32Array(index) : new Uint16Array(index);
 
-      this.#wireframeGeometry = new Geometry(this.renderer, {
-        ...this.#geometry.attributesData,
+      this._wireframeGeometry = new Geometry(this.renderer, {
+        ...this._geometry.attributesData,
         index: {
           data: indices,
         },
@@ -268,11 +268,11 @@ export default class Mesh extends Object3D {
    * @param destroy 是否销毁上一个几何体
    */
   updateGeometry(geometry, destroy = true) {
-    if (destroy && this.#geometry) {
-      this.#geometry.destroy();
+    if (destroy && this._geometry) {
+      this._geometry.destroy();
     }
-    this.#geometry = geometry;
-    this.updateWireframeGeometry(this.#wireframe, true);
+    this._geometry = geometry;
+    this.updateWireframeGeometry(this._wireframe, true);
   }
 
   /**
@@ -281,10 +281,10 @@ export default class Mesh extends Object3D {
    * @param destroy 是否销毁上一个 program
    */
   updateProgram(program, destroy = true) {
-    if (destroy && this.#program) {
-      this.#program.destroy();
+    if (destroy && this._program) {
+      this._program.destroy();
     }
-    this.#program = program;
+    this._program = program;
   }
 
   /**

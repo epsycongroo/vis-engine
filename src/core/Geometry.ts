@@ -42,13 +42,13 @@ export interface Attributes {
  * ```
  */
 export default class Geometry extends Base {
-  #id: string;
+  private _id: string;
 
-  #attributes: Map<string, BufferAttribute>;
+  private _attributes: Map<string, BufferAttribute>;
 
-  #VAOs: Map<string, any>;
+  private _VAOs: Map<string, any>;
 
-  #bounds: any;
+  private _bounds: any;
 
   drawRange: any;
 
@@ -70,10 +70,10 @@ export default class Geometry extends Base {
     };
     this.instancedCount = 0;
     this.isInstanced = false;
-    this.#attributes = new Map();
-    this.#VAOs = new Map();
+    this._attributes = new Map();
+    this._VAOs = new Map();
 
-    this.#id = uid('geometry');
+    this._id = uid('geometry');
     this.drawMode = this.gl.TRIANGLES;
     renderer.bindVertexArray(null);
     renderer.state.setActiveGeometry(null);
@@ -103,14 +103,14 @@ export default class Geometry extends Base {
    * 获取当前几何体数据的唯一标识
    */
   get id() {
-    return this.#id;
+    return this._id;
   }
 
   /**
    * 获取全部的属性信息
    */
   get attributes() {
-    return this.#attributes;
+    return this._attributes;
   }
 
   /**
@@ -118,8 +118,8 @@ export default class Geometry extends Base {
    */
   get attributesData(): Attributes {
     const attributes: Attributes = {};
-    const iterator = this.#attributes.entries();
-    for (let i = 0; i < this.#attributes.size; i++) {
+    const iterator = this._attributes.entries();
+    for (let i = 0; i < this._attributes.size; i++) {
       const entry = iterator.next().value;
       attributes[entry[0]] = omit<Attribute & { id: string }, AttributesOmitKeys>(entry[1], [
         'id',
@@ -141,7 +141,7 @@ export default class Geometry extends Base {
    * 获取当前几何体的包围盒
    */
   get bounds() {
-    return this.#bounds;
+    return this._bounds;
   }
 
   /**
@@ -149,7 +149,7 @@ export default class Geometry extends Base {
    * @param bounds
    */
   set bounds(bounds) {
-    this.#bounds = bounds;
+    this._bounds = bounds;
   }
 
   /**
@@ -351,7 +351,7 @@ export default class Geometry extends Base {
     const { attributeOrder } = program;
     const vao = this.renderer.createVertexArray();
     this.renderer.bindVertexArray(vao);
-    this.#VAOs.set(attributeOrder, vao);
+    this._VAOs.set(attributeOrder, vao);
     this.bindAttributes(program);
   }
 
@@ -401,8 +401,8 @@ export default class Geometry extends Base {
    */
   computeBoundingBox(vertices?: DataType | number[]) {
     const { data, offset = 0, stride, size } = this.attributes.get('position') as BufferAttribute;
-    if (!this.#bounds) {
-      this.#bounds = {
+    if (!this._bounds) {
+      this._bounds = {
         min: new Vector3(),
         max: new Vector3(),
         center: new Vector3(),
@@ -410,24 +410,24 @@ export default class Geometry extends Base {
         radius: Number.POSITIVE_INFINITY,
       };
     }
-    this.#bounds.min.setScalar(+Number.POSITIVE_INFINITY);
-    this.#bounds.max.setScalar(Number.NEGATIVE_INFINITY);
+    this._bounds.min.setScalar(+Number.POSITIVE_INFINITY);
+    this._bounds.max.setScalar(Number.NEGATIVE_INFINITY);
     const array = vertices || data;
     const dl = stride || size;
     for (let i = offset; i < array.length; i += dl) {
       const x = array[i + 0];
       const y = array[i + 1];
       const z = array[i + 2];
-      this.#bounds.min.x = Math.min(x, this.#bounds.min.x);
-      this.#bounds.min.y = Math.min(y, this.#bounds.min.y);
-      this.#bounds.min.z = Math.min(z, this.#bounds.min.z);
-      this.#bounds.max.x = Math.max(x, this.#bounds.max.x);
-      this.#bounds.max.y = Math.max(y, this.#bounds.max.y);
-      this.#bounds.max.z = Math.max(z, this.#bounds.max.z);
+      this._bounds.min.x = Math.min(x, this._bounds.min.x);
+      this._bounds.min.y = Math.min(y, this._bounds.min.y);
+      this._bounds.min.z = Math.min(z, this._bounds.min.z);
+      this._bounds.max.x = Math.max(x, this._bounds.max.x);
+      this._bounds.max.y = Math.max(y, this._bounds.max.y);
+      this._bounds.max.z = Math.max(z, this._bounds.max.z);
     }
-    this.#bounds.scale.subVectors(this.#bounds.max, this.#bounds.min);
-    this.#bounds.center.add(this.#bounds.min).add(this.#bounds.max).divideScalar(2);
-    return this.#bounds;
+    this._bounds.scale.subVectors(this._bounds.max, this._bounds.min);
+    this._bounds.center.add(this._bounds.min).add(this._bounds.max).divideScalar(2);
+    return this._bounds;
   }
 
   /**
@@ -436,7 +436,7 @@ export default class Geometry extends Base {
    */
   computeBoundingSphere(vertices?: DataType | number[]) {
     const { data, offset = 0, stride, size } = this.attributes.get('position') as BufferAttribute;
-    if (!this.#bounds) {
+    if (!this._bounds) {
       this.computeBoundingBox(vertices);
     }
     const array = vertices || data;
@@ -445,9 +445,9 @@ export default class Geometry extends Base {
     const length = array.length;
     for (let j = offset; j < length; j += dl) {
       tempVec3.fromArray(array, j);
-      len = Math.max(len, this.#bounds.center.distanceToSquared(tempVec3));
+      len = Math.max(len, this._bounds.center.distanceToSquared(tempVec3));
     }
-    this.#bounds.radius = Math.sqrt(len);
+    this._bounds.radius = Math.sqrt(len);
   }
 
   /**
@@ -459,11 +459,11 @@ export default class Geometry extends Base {
     const { start, count } = this.drawRange;
     const activeGeometryId = `${this.id}_${program.attributeOrder}`;
     if (this.rendererState.activeGeometryId !== activeGeometryId) {
-      const vao = this.#VAOs.get(program.attributeOrder);
+      const vao = this._VAOs.get(program.attributeOrder);
       if (!vao) {
         this.createVAO(program);
       }
-      this.renderer.bindVertexArray(this.#VAOs.get(program.attributeOrder));
+      this.renderer.bindVertexArray(this._VAOs.get(program.attributeOrder));
       this.rendererState.activeGeometryId = activeGeometryId;
     }
 
@@ -547,13 +547,13 @@ export default class Geometry extends Base {
    * 销毁几何体对象
    */
   destroy() {
-    this.#VAOs.forEach((t) => {
+    this._VAOs.forEach((t) => {
       this.renderer.deleteVertexArray(t);
     });
-    this.#VAOs.clear();
-    this.#attributes.forEach((t) => {
+    this._VAOs.clear();
+    this._attributes.forEach((t) => {
       this.gl.deleteBuffer(t.buffer);
     });
-    this.#attributes.clear();
+    this._attributes.clear();
   }
 }

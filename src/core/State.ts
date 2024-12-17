@@ -108,12 +108,12 @@ interface IState extends StateOptions {
  * 渲染状态管理，目的是减少CPU与GPU的交互，一般我们不需要主动创建，它默认包含在 `Renderer` 实例中。
  */
 export default class State extends Base {
-  #state: IState;
+  private _state: IState;
 
   constructor(renderer: Renderer, options?: Partial<StateOptions>) {
     super(renderer);
     const { gl } = renderer;
-    this.#state = {
+    this._state = {
       viewport: {
         x: 0,
         y: 0,
@@ -160,28 +160,28 @@ export default class State extends Base {
    * 获取所有状态
    */
   get state() {
-    return this.#state;
+    return this._state;
   }
 
   /**
    * 获取视图
    */
   get viewport() {
-    return this.#state.viewport;
+    return this._state.viewport;
   }
 
   /**
    * 获取当前 `gl` 的纹理单位
    */
   get textureUnits() {
-    return this.#state.textureUnits;
+    return this._state.textureUnits;
   }
 
   /**
    * 获取已激活的纹理
    */
   get activeTextureUnit() {
-    return this.#state.activeTextureUnit;
+    return this._state.activeTextureUnit;
   }
 
   /**
@@ -189,14 +189,14 @@ export default class State extends Base {
    * @param activeTextureUnit
    */
   set activeTextureUnit(activeTextureUnit) {
-    this.#state.activeTextureUnit = activeTextureUnit;
+    this._state.activeTextureUnit = activeTextureUnit;
   }
 
   /**
    * 获取当前的 `Program` id
    */
   get currentProgramId() {
-    return this.#state.currentProgramId;
+    return this._state.currentProgramId;
   }
 
   /**
@@ -204,14 +204,14 @@ export default class State extends Base {
    * @param id
    */
   set currentProgramId(id: string | number) {
-    this.#state.currentProgramId = id;
+    this._state.currentProgramId = id;
   }
 
   /**
    * 获取当前激活的几何体 id
    */
   get activeGeometryId() {
-    return this.#state.activeGeometryId;
+    return this._state.activeGeometryId;
   }
 
   /**
@@ -219,7 +219,7 @@ export default class State extends Base {
    * @param id
    */
   set activeGeometryId(id: string | number) {
-    this.#state.activeGeometryId = id;
+    this._state.activeGeometryId = id;
   }
 
   /**
@@ -227,14 +227,14 @@ export default class State extends Base {
    * @param flipY
    */
   set flipY(flipY: boolean) {
-    this.#state.flipY = flipY;
+    this._state.flipY = flipY;
   }
 
   /**
    * 获取 `flipY` 配置
    */
   get flipY(): boolean {
-    return this.#state.flipY;
+    return this._state.flipY;
   }
 
   /**
@@ -242,14 +242,14 @@ export default class State extends Base {
    * @param unpackAlignment
    */
   set unpackAlignment(unpackAlignment: number) {
-    this.#state.unpackAlignment = unpackAlignment;
+    this._state.unpackAlignment = unpackAlignment;
   }
 
   /**
    * 获取 `unpackAlignment` 配置
    */
   get unpackAlignment(): number {
-    return this.#state.unpackAlignment;
+    return this._state.unpackAlignment;
   }
 
   /**
@@ -257,14 +257,14 @@ export default class State extends Base {
    * @param premultiplyAlpha
    */
   set premultiplyAlpha(premultiplyAlpha: boolean) {
-    this.#state.premultiplyAlpha = premultiplyAlpha;
+    this._state.premultiplyAlpha = premultiplyAlpha;
   }
 
   /**
    * 获取 `premultipliedAlpha` 配置
    */
   get premultiplyAlpha(): boolean {
-    return this.#state.premultiplyAlpha;
+    return this._state.premultiplyAlpha;
   }
 
   /**
@@ -272,14 +272,14 @@ export default class State extends Base {
    * @param boundBuffer
    */
   set boundBuffer(boundBuffer) {
-    this.#state.boundBuffer = boundBuffer;
+    this._state.boundBuffer = boundBuffer;
   }
 
   /**
    * 获取最后一次绑定的顶点数据
    */
   get boundBuffer() {
-    return this.#state.boundBuffer;
+    return this._state.boundBuffer;
   }
 
   /**
@@ -287,14 +287,14 @@ export default class State extends Base {
    * @param anisotropy
    */
   set anisotropy(anisotropy: number) {
-    this.#state.anisotropy = anisotropy;
+    this._state.anisotropy = anisotropy;
   }
 
   /**
    * 获取 `anisotropy` 配置
    */
   get anisotropy() {
-    return this.#state.anisotropy;
+    return this._state.anisotropy;
   }
 
   /**
@@ -347,7 +347,7 @@ export default class State extends Base {
       this.setLineWidth(options.lineWidth);
     }
 
-    this.#state = Object.assign(this.#state, options);
+    this._state = Object.assign(this._state, options);
   }
 
   /**
@@ -355,9 +355,9 @@ export default class State extends Base {
    * @param id
    */
   enable(id) {
-    if (this.#state[id] !== true) {
+    if (this._state[id] !== true) {
       this.gl.enable(id);
-      this.#state[id] = true;
+      this._state[id] = true;
     }
   }
 
@@ -366,9 +366,9 @@ export default class State extends Base {
    * @param id
    */
   disable(id) {
-    if (this.#state[id] !== false) {
+    if (this._state[id] !== false) {
       this.gl.disable(id);
-      this.#state[id] = false;
+      this._state[id] = false;
     }
   }
 
@@ -380,9 +380,9 @@ export default class State extends Base {
    * @param y
    */
   setViewport(width, height, x = 0, y = 0) {
-    if (this.#state.viewport.width === width && this.#state.viewport.height === height) return;
+    if (this._state.viewport.width === width && this._state.viewport.height === height) return;
     this.gl.viewport(x, y, width, height);
-    this.#state.viewport = {
+    this._state.viewport = {
       width,
       height,
       x,
@@ -398,9 +398,9 @@ export default class State extends Base {
    * @param colorMask
    */
   setMask(colorMask: boolean) {
-    if (this.#state.colorMask !== colorMask) {
+    if (this._state.colorMask !== colorMask) {
       this.gl.colorMask(colorMask, colorMask, colorMask, colorMask);
-      this.#state.colorMask = colorMask;
+      this._state.colorMask = colorMask;
     }
   }
 
@@ -411,7 +411,7 @@ export default class State extends Base {
    * @param options
    */
   setBlending(blending: IBlendType, options?: Partial<StateOptions>) {
-    this.#state.blending = blending;
+    this._state.blending = blending;
     if (blending === BlendType.NoBlending) {
       this.disable(this.gl.BLEND);
       return;
@@ -419,7 +419,7 @@ export default class State extends Base {
       this.enable(this.gl.BLEND);
     }
     if (blending === BlendType.AdditiveBlending) {
-      if (this.#state.premultiplyAlpha) {
+      if (this._state.premultiplyAlpha) {
         this.setBlendEquation(this.gl.FUNC_ADD, this.gl.FUNC_ADD);
         this.setBlendFunc(this.gl.ONE, this.gl.ONE, this.gl.ONE, this.gl.ONE);
       } else {
@@ -427,7 +427,7 @@ export default class State extends Base {
         this.setBlendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
       }
     } else if (blending === BlendType.SubtractiveBlending) {
-      if (this.#state.premultiplyAlpha) {
+      if (this._state.premultiplyAlpha) {
         this.setBlendEquation(this.gl.FUNC_ADD, this.gl.FUNC_ADD);
         this.setBlendFunc(
           this.gl.ZERO,
@@ -440,7 +440,7 @@ export default class State extends Base {
         this.setBlendFunc(this.gl.ZERO, this.gl.ONE_MINUS_SRC_COLOR);
       }
     } else if (blending === BlendType.MultiplyBlending) {
-      if (this.#state.premultiplyAlpha) {
+      if (this._state.premultiplyAlpha) {
         this.setBlendEquation(this.gl.FUNC_ADD, this.gl.FUNC_ADD);
         this.setBlendFunc(this.gl.ZERO, this.gl.SRC_COLOR, this.gl.ZERO, this.gl.SRC_ALPHA);
       } else {
@@ -448,7 +448,7 @@ export default class State extends Base {
         this.setBlendFunc(this.gl.ZERO, this.gl.SRC_COLOR);
       }
     } else if (blending === BlendType.NormalBlending) {
-      if (this.#state.premultiplyAlpha) {
+      if (this._state.premultiplyAlpha) {
         this.setBlendEquation(this.gl.FUNC_ADD, this.gl.FUNC_ADD);
         this.setBlendFunc(
           this.gl.ONE,
@@ -489,12 +489,12 @@ export default class State extends Base {
    */
   setBlendFunc(src: number, dst: number, srcAlpha?: number, dstAlpha?: number) {
     if (
-      src !== this.#state.blendFunc?.src ||
-      dst !== this.#state.blendFunc?.dst ||
-      srcAlpha !== this.#state.blendFunc?.srcAlpha ||
-      dstAlpha !== this.#state.blendFunc?.dstAlpha
+      src !== this._state.blendFunc?.src ||
+      dst !== this._state.blendFunc?.dst ||
+      srcAlpha !== this._state.blendFunc?.srcAlpha ||
+      dstAlpha !== this._state.blendFunc?.dstAlpha
     ) {
-      this.#state.blendFunc = {
+      this._state.blendFunc = {
         src,
         dst,
         srcAlpha,
@@ -519,10 +519,10 @@ export default class State extends Base {
    */
   setBlendEquation(modeRGB: number, modeAlpha?: number) {
     if (
-      modeRGB !== this.#state.blendEquation?.modeRGB ||
-      modeAlpha !== this.#state.blendEquation?.modeAlpha
+      modeRGB !== this._state.blendEquation?.modeRGB ||
+      modeAlpha !== this._state.blendEquation?.modeAlpha
     ) {
-      this.#state.blendEquation = {
+      this._state.blendEquation = {
         modeRGB,
         modeAlpha,
       };
@@ -540,8 +540,8 @@ export default class State extends Base {
    * @param alpha
    */
   setClearAlpha(alpha: number) {
-    if (this.#state.clearAlpha !== alpha) {
-      this.#state.clearAlpha = alpha;
+    if (this._state.clearAlpha !== alpha) {
+      this._state.clearAlpha = alpha;
     }
   }
 
@@ -551,14 +551,14 @@ export default class State extends Base {
    * @param alpha 透明度
    */
   setClearColor(color: ColorLike, alpha?: number) {
-    if (this.#state.clearAlpha !== alpha || this.#state.clearColor !== color) {
-      this.#state.clearColor = color;
+    if (this._state.clearAlpha !== alpha || this._state.clearColor !== color) {
+      this._state.clearColor = color;
       if (!isUndef(alpha) && !isNull(alpha)) {
-        this.#state.clearAlpha = alpha;
+        this._state.clearAlpha = alpha;
       } else {
-        this.#state.clearAlpha = color.a as number;
+        this._state.clearAlpha = color.a as number;
       }
-      this.gl.clearColor(color.r, color.g, color.b, this.#state.clearAlpha);
+      this.gl.clearColor(color.r, color.g, color.b, this._state.clearAlpha);
     }
   }
 
@@ -567,14 +567,14 @@ export default class State extends Base {
    * @param cullFace
    */
   setCullFace(cullFace: GLenum) {
-    if (this.#state.cullFace !== cullFace) {
+    if (this._state.cullFace !== cullFace) {
       if (cullFace) {
         this.gl.enable(this.gl.CULL_FACE);
       } else {
         this.gl.disable(this.gl.CULL_FACE);
       }
 
-      this.#state.cullFace = cullFace;
+      this._state.cullFace = cullFace;
       this.gl.cullFace(cullFace);
     }
   }
@@ -585,8 +585,8 @@ export default class State extends Base {
    * @param frontFace
    */
   setFrontFace(frontFace: GLenum) {
-    if (this.#state.frontFace !== frontFace) {
-      this.#state.frontFace = frontFace;
+    if (this._state.frontFace !== frontFace) {
+      this._state.frontFace = frontFace;
       this.gl.frontFace(frontFace);
     }
   }
@@ -596,8 +596,8 @@ export default class State extends Base {
    * @param mask
    */
   setDepthMask(mask: boolean) {
-    if (this.#state.depthMask !== mask) {
-      this.#state.depthMask = mask;
+    if (this._state.depthMask !== mask) {
+      this._state.depthMask = mask;
       this.gl.depthMask(mask);
     }
   }
@@ -607,8 +607,8 @@ export default class State extends Base {
    * @param func
    */
   setDepthFunc(func: GLenum) {
-    if (this.#state.depthFunc !== func) {
-      this.#state.depthFunc = func;
+    if (this._state.depthFunc !== func) {
+      this._state.depthFunc = func;
       this.gl.depthFunc(func);
     }
   }
@@ -618,8 +618,8 @@ export default class State extends Base {
    * @param state
    */
   setDepthTest(state: boolean) {
-    if (this.#state.depthTest !== state) {
-      this.#state.depthTest = state;
+    if (this._state.depthTest !== state) {
+      this._state.depthTest = state;
       if (state) {
         this.enable(this.gl.DEPTH_TEST);
       } else {
@@ -637,17 +637,17 @@ export default class State extends Base {
    */
   setStencilFunc(cmp: GLenum, ref: GLenum, mask: GLenum, face?: GLenum) {
     if (
-      this.#state?.stencil?.func?.cmp !== cmp ||
-      this.#state?.stencil?.func?.ref !== ref ||
-      this.#state?.stencil?.func?.mask !== mask
+      this._state?.stencil?.func?.cmp !== cmp ||
+      this._state?.stencil?.func?.ref !== ref ||
+      this._state?.stencil?.func?.mask !== mask
     ) {
-      if (!this.#state?.stencil) {
-        this.#state.stencil = {} as StateOptions['stencil'];
+      if (!this._state?.stencil) {
+        this._state.stencil = {} as StateOptions['stencil'];
       }
-      if (!this.#state?.stencil?.func) {
-        this.#state.stencil.func = {} as StateOptions['stencil']['func'];
+      if (!this._state?.stencil?.func) {
+        this._state.stencil.func = {} as StateOptions['stencil']['func'];
       }
-      this.#state.stencil.func = {
+      this._state.stencil.func = {
         ref,
         mask,
         cmp,
@@ -670,66 +670,66 @@ export default class State extends Base {
   setStencilOp(fail, zFail, zPass, face?: GLenum) {
     const flag = false;
 
-    if (!this.#state?.stencil) {
-      this.#state.stencil = {} as StateOptions['stencil'];
+    if (!this._state?.stencil) {
+      this._state.stencil = {} as StateOptions['stencil'];
     }
 
     if (!face || face === this.gl.FRONT_AND_BACK) {
       return (
-        this.#state.stencil?.opFront?.fail !== fail ||
-        this.#state.stencil?.opFront?.zFail !== zFail ||
-        this.#state.stencil?.opFront?.zPass !== zPass ||
-        this.#state.stencil?.opBack?.fail !== fail ||
-        this.#state.stencil?.opBack?.zFail !== zFail ||
-        this.#state.stencil?.opBack?.zPass !== zPass
+        this._state.stencil?.opFront?.fail !== fail ||
+        this._state.stencil?.opFront?.zFail !== zFail ||
+        this._state.stencil?.opFront?.zPass !== zPass ||
+        this._state.stencil?.opBack?.fail !== fail ||
+        this._state.stencil?.opBack?.zFail !== zFail ||
+        this._state.stencil?.opBack?.zPass !== zPass
       );
     } else if (face === this.gl.FRONT) {
       return (
-        this.#state.stencil?.opFront?.fail !== fail ||
-        this.#state.stencil?.opFront?.zFail !== zFail ||
-        this.#state.stencil?.opFront?.zPass !== zPass
+        this._state.stencil?.opFront?.fail !== fail ||
+        this._state.stencil?.opFront?.zFail !== zFail ||
+        this._state.stencil?.opFront?.zPass !== zPass
       );
     } else if (face === this.gl.BACK) {
       return (
-        this.#state.stencil?.opBack?.fail !== fail ||
-        this.#state.stencil?.opBack?.zFail !== zFail ||
-        this.#state.stencil?.opBack?.zPass !== zPass
+        this._state.stencil?.opBack?.fail !== fail ||
+        this._state.stencil?.opBack?.zFail !== zFail ||
+        this._state.stencil?.opBack?.zPass !== zPass
       );
     }
 
     if (flag) {
       if (face) {
-        if (!this.#state.stencil?.opFront) {
-          this.#state.stencil.opFront = {} as StateOptions['stencil']['opFront'];
+        if (!this._state.stencil?.opFront) {
+          this._state.stencil.opFront = {} as StateOptions['stencil']['opFront'];
         }
-        if (!this.#state.stencil?.opBack) {
-          this.#state.stencil.opBack = {} as StateOptions['stencil']['opBack'];
+        if (!this._state.stencil?.opBack) {
+          this._state.stencil.opBack = {} as StateOptions['stencil']['opBack'];
         }
         if (face === this.gl.FRONT_AND_BACK) {
-          this.#state.stencil.opFront.fail = fail;
-          this.#state.stencil.opFront.zFail = zFail;
-          this.#state.stencil.opFront.zPass = zPass;
-          this.#state.stencil.opBack.fail = fail;
-          this.#state.stencil.opBack.zFail = zFail;
-          this.#state.stencil.opBack.zPass = zPass;
+          this._state.stencil.opFront.fail = fail;
+          this._state.stencil.opFront.zFail = zFail;
+          this._state.stencil.opFront.zPass = zPass;
+          this._state.stencil.opBack.fail = fail;
+          this._state.stencil.opBack.zFail = zFail;
+          this._state.stencil.opBack.zPass = zPass;
         } else if (face === this.gl.FRONT) {
-          this.#state.stencil.opFront.fail = fail;
-          this.#state.stencil.opFront.zFail = zFail;
-          this.#state.stencil.opFront.zPass = zPass;
+          this._state.stencil.opFront.fail = fail;
+          this._state.stencil.opFront.zFail = zFail;
+          this._state.stencil.opFront.zPass = zPass;
         } else if (face === this.gl.BACK) {
-          this.#state.stencil.opBack.fail = fail;
-          this.#state.stencil.opBack.zFail = zFail;
-          this.#state.stencil.opBack.zPass = zPass;
+          this._state.stencil.opBack.fail = fail;
+          this._state.stencil.opBack.zFail = zFail;
+          this._state.stencil.opBack.zPass = zPass;
         }
 
         this.gl.stencilOpSeparate(face, fail, zFail, zPass);
       } else {
-        this.#state.stencil.opFront.fail = fail;
-        this.#state.stencil.opFront.zFail = zFail;
-        this.#state.stencil.opFront.zPass = zPass;
-        this.#state.stencil.opBack.fail = fail;
-        this.#state.stencil.opBack.zFail = zFail;
-        this.#state.stencil.opBack.zPass = zPass;
+        this._state.stencil.opFront.fail = fail;
+        this._state.stencil.opFront.zFail = zFail;
+        this._state.stencil.opFront.zPass = zPass;
+        this._state.stencil.opBack.fail = fail;
+        this._state.stencil.opBack.zFail = zFail;
+        this._state.stencil.opBack.zPass = zPass;
         this.gl.stencilOp(fail, zFail, zPass);
       }
     }
@@ -741,9 +741,9 @@ export default class State extends Base {
    * @param face
    */
   setStencilMask(mask, face?: GLenum) {
-    if (this.#state.stencil?.mask !== mask) {
-      this.#state.stencil = {
-        ...this.#state.stencil,
+    if (this._state.stencil?.mask !== mask) {
+      this._state.stencil = {
+        ...this._state.stencil,
         mask,
       };
       if (face) {
@@ -759,8 +759,8 @@ export default class State extends Base {
    * @param unit
    */
   setActiveTexture(unit) {
-    if (this.#state.activeTextureUnit !== unit) {
-      this.#state.activeTextureUnit = unit;
+    if (this._state.activeTextureUnit !== unit) {
+      this._state.activeTextureUnit = unit;
       this.gl.activeTexture(this.gl.TEXTURE0 + unit);
     }
   }
@@ -770,8 +770,8 @@ export default class State extends Base {
    * @param width
    */
   setLineWidth(width) {
-    if (this.#state.lineWidth !== width) {
-      this.#state.lineWidth = width;
+    if (this._state.lineWidth !== width) {
+      this._state.lineWidth = width;
       this.gl.lineWidth(width);
     }
   }
@@ -790,11 +790,11 @@ export default class State extends Base {
   setPolygonOffset(polygonOffset, factor, units) {
     if (polygonOffset) {
       this.enable(this.gl.POLYGON_OFFSET_FILL);
-      if (this.#state.polygonOffsetFactor !== factor || this.#state.polygonOffsetUnits !== units) {
+      if (this._state.polygonOffsetFactor !== factor || this._state.polygonOffsetUnits !== units) {
         this.gl.polygonOffset(factor, units);
 
-        this.#state.polygonOffsetFactor = factor;
-        this.#state.polygonOffsetUnits = units;
+        this._state.polygonOffsetFactor = factor;
+        this._state.polygonOffsetUnits = units;
       }
     } else {
       this.disable(this.gl.POLYGON_OFFSET_FILL);
@@ -807,8 +807,8 @@ export default class State extends Base {
    */
   bindFramebuffer(v: FBOData = {} as FBOData) {
     const { target = this.gl.FRAMEBUFFER, buffer = null } = v;
-    if (this.#state.framebuffer !== buffer) {
-      this.#state.framebuffer = buffer;
+    if (this._state.framebuffer !== buffer) {
+      this._state.framebuffer = buffer;
       this.gl.bindFramebuffer(target, buffer);
     }
   }
@@ -818,7 +818,7 @@ export default class State extends Base {
    * @param id
    */
   setActiveGeometry(id) {
-    this.#state.activeGeometryId = id;
+    this._state.activeGeometryId = id;
   }
 
   /**
@@ -826,12 +826,12 @@ export default class State extends Base {
    * @param force
    */
   reset(force = true) {
-    const keys = Object.keys(this.#state);
+    const keys = Object.keys(this._state);
     if (force) {
       keys
         .filter((key) => ['viewport', 'premultiplyAlpha'].indexOf(key) < 0)
         .forEach((key) => {
-          delete this.#state[key];
+          delete this._state[key];
         });
       this.bindFramebuffer({
         buffer: null,
@@ -880,19 +880,19 @@ export default class State extends Base {
             ].indexOf(key) > -1,
         )
         .forEach((key) => {
-          delete this.#state[key];
+          delete this._state[key];
         });
 
       this.bindFramebuffer({
         buffer: null,
       });
 
-      this.#state.flipY = false;
-      this.#state.activeGeometryId = -1;
-      this.#state.activeTextureUnit = -1;
-      this.#state.currentProgramId = -1;
-      this.#state.textureUnits = [];
-      this.#state.boundBuffer = null;
+      this.state.flipY = false;
+      this.state.activeGeometryId = -1;
+      this.state.activeTextureUnit = -1;
+      this.state.currentProgramId = -1;
+      this.state.textureUnits = [];
+      this.state.boundBuffer = null;
     }
   }
 }

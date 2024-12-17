@@ -85,7 +85,7 @@ export default class Texture3D extends Texture<Texture3DOptions> {
    */
   public depth: number;
 
-  #state: Texture3DState = {} as Texture3DState;
+  private state: Texture3DState = {} as Texture3DState;
 
   /**
    * @param renderer Renderer 对象
@@ -116,7 +116,7 @@ export default class Texture3D extends Texture<Texture3DOptions> {
 
     this.needsUpdate = true;
     this.depth = this.options.depth as number;
-    this.#state.version = -1;
+    this.state.version = -1;
     this.update();
   }
 
@@ -159,7 +159,7 @@ export default class Texture3D extends Texture<Texture3DOptions> {
    * @param units 纹理单位，默认为 0
    */
   update(units = 0) {
-    const needUpdate = !(this.image === this.#state.image && !this.needsUpdate);
+    const needUpdate = !(this.image === this.state.image && !this.needsUpdate);
     const checked =
       needUpdate ||
       this.rendererState.textureUnits[units] !== this.id ||
@@ -170,33 +170,33 @@ export default class Texture3D extends Texture<Texture3DOptions> {
     }
     if (!needUpdate) return;
     this.needsUpdate = false;
-    if (this.options.wrapS !== this.#state.wrapS) {
+    if (this.options.wrapS !== this.state.wrapS) {
       this.gl.texParameteri(this.target, this.gl.TEXTURE_WRAP_S, this.options.wrapS as GLenum);
-      this.#state.wrapS = this.options.wrapS as GLenum;
+      this.state.wrapS = this.options.wrapS as GLenum;
     }
-    if (this.options.wrapT !== this.#state.wrapT) {
+    if (this.options.wrapT !== this.state.wrapT) {
       this.gl.texParameteri(this.target, this.gl.TEXTURE_WRAP_T, this.options.wrapT as GLenum);
-      this.#state.wrapT = this.options.wrapT as GLenum;
+      this.state.wrapT = this.options.wrapT as GLenum;
     }
-    if (this.options.wrapR !== this.#state.wrapR) {
+    if (this.options.wrapR !== this.state.wrapR) {
       this.gl.texParameteri(this.target, this.gl.TEXTURE_WRAP_R, this.options.wrapR as GLenum);
-      this.#state.wrapR = this.options.wrapR as GLenum;
+      this.state.wrapR = this.options.wrapR as GLenum;
     }
-    if (this.options.minFilter !== this.#state.minFilter) {
+    if (this.options.minFilter !== this.state.minFilter) {
       this.gl.texParameteri(
         this.target,
         this.gl.TEXTURE_MIN_FILTER,
         this.options.minFilter as GLenum,
       );
-      this.#state.minFilter = this.options.minFilter as GLenum;
+      this.state.minFilter = this.options.minFilter as GLenum;
     }
-    if (this.options.magFilter !== this.#state.magFilter) {
+    if (this.options.magFilter !== this.state.magFilter) {
       this.gl.texParameteri(
         this.target,
         this.gl.TEXTURE_MAG_FILTER,
         this.options.magFilter as GLenum,
       );
-      this.#state.magFilter = this.options.magFilter as GLenum;
+      this.state.magFilter = this.options.magFilter as GLenum;
     }
     if (this.options.flipY !== this.rendererState.flipY) {
       this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, this.options.flipY as boolean);
@@ -331,15 +331,15 @@ export default class Texture3D extends Texture<Texture3DOptions> {
         );
       }
     }
-    this.#state.image = this.image;
-    this.#state.version += 1;
+    this.state.image = this.image;
+    this.state.version += 1;
   }
 
   /**
    * 移除相关状态
    */
   removeStats() {
-    this.#state = {
+    this.state = {
       version: -1,
     } as Texture3DState;
   }

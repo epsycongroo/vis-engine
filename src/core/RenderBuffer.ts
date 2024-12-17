@@ -45,7 +45,7 @@ export default class RenderBuffer extends Resource<RenderBufferOptions> {
    */
   public height: number;
 
-  #internalFormat: GLenum;
+  private _internalFormat: GLenum;
 
   constructor(renderer: Renderer, options: Partial<RenderBufferOptions> = {} as RenderBufferOptions) {
     super(renderer, {
@@ -53,7 +53,7 @@ export default class RenderBuffer extends Resource<RenderBufferOptions> {
       format: options.format || renderer.gl.DEPTH_COMPONENT16,
     });
 
-    this.#internalFormat = this.options.format as GLenum;
+    this._internalFormat = this.options.format as GLenum;
 
     this.width = this.options.width as number;
     this.height = this.options.height as number;
@@ -65,7 +65,7 @@ export default class RenderBuffer extends Resource<RenderBufferOptions> {
     this.bind();
     renderer.gl.renderbufferStorage(
       renderer.gl.RENDERBUFFER,
-      this.#internalFormat,
+      this._internalFormat,
       this.width,
       this.height,
     );
@@ -81,7 +81,7 @@ export default class RenderBuffer extends Resource<RenderBufferOptions> {
     this.width = width;
     this.height = height;
     this.bind();
-    this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.#internalFormat, width, height);
+    this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this._internalFormat, width, height);
     this.unbind();
   }
 

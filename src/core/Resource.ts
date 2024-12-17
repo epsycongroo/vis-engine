@@ -14,9 +14,9 @@ export interface ResourceOptions {
 }
 
 export default class Resource<T extends ResourceOptions> extends Base {
-  #handle: any;
+  private _handle: any;
 
-  #lastHandle: any;
+  private _lastHandle: any;
 
   id: string;
 
@@ -34,18 +34,18 @@ export default class Resource<T extends ResourceOptions> extends Base {
     this.id = options?.id || uid(this.constructor.name);
     this.name = options?.name;
     this.userData = options?.userData;
-    this.#handle = options?.handle;
+    this._handle = options?.handle;
 
     this.options = options;
-    if (this.#handle === undefined) {
-      this.#handle = this.createHandle();
+    if (this._handle === undefined) {
+      this._handle = this.createHandle();
     }
 
     this.byteLength = 0;
   }
 
   get handle() {
-    return this.#handle;
+    return this._handle;
   }
 
   /**
@@ -53,15 +53,15 @@ export default class Resource<T extends ResourceOptions> extends Base {
    * @param handle
    */
   swapHandle(handle) {
-    this.#lastHandle = this.#handle;
-    this.#handle = handle;
+    this._lastHandle = this._handle;
+    this._handle = handle;
   }
 
   /**
    * 恢复为原有 `handle`
    */
   restoreHandle() {
-    this.#handle = this.#lastHandle;
+    this._handle = this._lastHandle;
   }
 
   /**
@@ -78,7 +78,7 @@ export default class Resource<T extends ResourceOptions> extends Base {
     if (this.handle) {
       this.removeStats();
     }
-    this.#handle = null;
+    this._handle = null;
 
     // Optionally, recursively delete the children
     if (children && deleteChildren) {

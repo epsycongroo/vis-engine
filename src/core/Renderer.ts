@@ -174,33 +174,33 @@ export interface RenderParams {
  * 渲染器
  */
 export default class Renderer {
-  readonly #gl: WebGLRenderingContext | WebGL2RenderingContext;
+  private readonly _gl: WebGLRenderingContext | WebGL2RenderingContext;
 
-  readonly #state: State;
+  private readonly _state: State;
 
-  readonly #extensions: {
+  private readonly _extensions: {
     [key in ExtensionKeys]: Extensions;
   };
 
-  readonly #autoClear: boolean;
+  private readonly _autoClear: boolean;
 
-  readonly #depth: WithUndef<boolean>;
+  private readonly _depth: WithUndef<boolean>;
 
-  readonly #alpha: WithUndef<boolean>;
+  private readonly _alpha: WithUndef<boolean>;
 
-  readonly #stencil: WithUndef<boolean>;
+  private readonly _stencil: WithUndef<boolean>;
 
-  readonly #antialias: WithUndef<boolean>;
+  private readonly _antialias: WithUndef<boolean>;
 
-  readonly #premultipliedAlpha: WithUndef<boolean>;
+  private readonly _premultipliedAlpha: WithUndef<boolean>;
 
-  readonly #preserveDrawingBuffer: WithUndef<boolean>;
+  private readonly _preserveDrawingBuffer: WithUndef<boolean>;
 
-  readonly #color: boolean;
+  private readonly _color: boolean;
 
-  readonly #dpr: number;
+  private readonly _dpr: number;
 
-  readonly #frustumCull: boolean;
+  private readonly _frustumCull: boolean;
 
   public vertexAttribDivisor:
     | ANGLE_instanced_arrays['vertexAttribDivisorANGLE']
@@ -245,68 +245,68 @@ export default class Renderer {
       opts,
     );
 
-    this.#autoClear = Boolean(options.autoClear);
+    this._autoClear = Boolean(options.autoClear);
 
-    this.#depth = options.depth;
+    this._depth = options.depth;
 
-    this.#alpha = options.alpha;
+    this._alpha = options.alpha;
 
-    this.#stencil = options.stencil;
+    this._stencil = options.stencil;
 
-    this.#antialias = options.antialias;
+    this._antialias = options.antialias;
 
-    this.#premultipliedAlpha = options.premultipliedAlpha;
+    this._premultipliedAlpha = options.premultipliedAlpha;
 
-    this.#preserveDrawingBuffer = options.preserveDrawingBuffer;
+    this._preserveDrawingBuffer = options.preserveDrawingBuffer;
 
-    this.#gl = (
+    this._gl = (
       isWebGL(gl) || isWebGL2(gl)
         ? gl
         : getContext(
             gl as HTMLCanvasElement,
             {
-              alpha: this.#alpha,
-              depth: this.#depth,
-              stencil: this.#stencil,
-              antialias: this.#antialias,
+              alpha: this._alpha,
+              depth: this._depth,
+              stencil: this._stencil,
+              antialias: this._antialias,
               powerPreference: options.powerPreference,
-              premultipliedAlpha: this.#premultipliedAlpha,
-              preserveDrawingBuffer: this.#preserveDrawingBuffer,
+              premultipliedAlpha: this._premultipliedAlpha,
+              preserveDrawingBuffer: this._preserveDrawingBuffer,
             },
             options.requestWebGl2,
           )
     ) as WebGLRenderingContext | WebGL2RenderingContext;
 
-    const attrs = this.#gl?.getContextAttributes();
+    const attrs = this._gl?.getContextAttributes();
 
-    const viewport = this.#gl?.getParameter(this.#gl.VIEWPORT);
-    const flipY = this.#gl?.getParameter(this.#gl.UNPACK_FLIP_Y_WEBGL);
+    const viewport = this._gl?.getParameter(this._gl.VIEWPORT);
+    const flipY = this._gl?.getParameter(this._gl.UNPACK_FLIP_Y_WEBGL);
 
-    this.#state = new State(this);
+    this._state = new State(this);
 
     if (attrs) {
-      this.#depth = Boolean(attrs.depth);
-      this.#antialias = Boolean(attrs.antialias);
-      this.#alpha = Boolean(attrs.alpha);
-      this.#stencil = Boolean(attrs.stencil);
-      this.#premultipliedAlpha = Boolean(attrs.premultipliedAlpha);
-      this.#preserveDrawingBuffer = Boolean(attrs.preserveDrawingBuffer);
+      this._depth = Boolean(attrs.depth);
+      this._antialias = Boolean(attrs.antialias);
+      this._alpha = Boolean(attrs.alpha);
+      this._stencil = Boolean(attrs.stencil);
+      this._premultipliedAlpha = Boolean(attrs.premultipliedAlpha);
+      this._preserveDrawingBuffer = Boolean(attrs.preserveDrawingBuffer);
     }
 
-    this.#state.flipY = Boolean(flipY);
-    this.#state.setViewport(viewport[2], viewport[3], viewport[0], viewport[1]);
-    this.#state.premultiplyAlpha = this.#premultipliedAlpha;
+    this._state.flipY = Boolean(flipY);
+    this._state.setViewport(viewport[2], viewport[3], viewport[0], viewport[1]);
+    this._state.premultiplyAlpha = this._premultipliedAlpha;
 
-    this.#color = true;
+    this._color = true;
 
-    this.#dpr = options.dpr || 1;
+    this._dpr = options.dpr || 1;
 
-    this.width = this.gl.canvas.width / this.#dpr;
-    this.height = this.gl.canvas.height / this.#dpr;
+    this.width = this.gl.canvas.width / this._dpr;
+    this.height = this.gl.canvas.height / this._dpr;
 
-    this.#frustumCull = !!options.frustumCull;
+    this._frustumCull = !!options.frustumCull;
 
-    this.#extensions = {} as {
+    this._extensions = {} as {
       [key in ExtensionKeys]: Extensions;
     };
 
@@ -348,8 +348,8 @@ export default class Renderer {
             external1ExtensionKeys.findIndex((ext) => ext === extension) > -1,
         )
         .forEach((extension: ExternalExtensionKeys) => {
-          if (!this.#extensions[extension] && !this.isWebGL2) {
-            this.#extensions[extension] = this.gl.getExtension(extension);
+          if (!this._extensions[extension] && !this.isWebGL2) {
+            this._extensions[extension] = this.gl.getExtension(extension);
           }
         });
 
@@ -359,8 +359,8 @@ export default class Renderer {
             external2ExtensionKeys.findIndex((ext) => ext === extension) > -1,
         )
         .forEach((extension: ExternalExtensionKeys) => {
-          if (!this.#extensions[extension] && this.isWebGL2) {
-            this.#extensions[extension] = this.gl.getExtension(extension);
+          if (!this._extensions[extension] && this.isWebGL2) {
+            this._extensions[extension] = this.gl.getExtension(extension);
           }
         });
 
@@ -370,8 +370,8 @@ export default class Renderer {
             external12ExtensionKeys.findIndex((ext) => ext === extension) > -1,
         )
         .forEach((extension: ExternalExtensionKeys) => {
-          if (!this.#extensions[extension]) {
-            this.#extensions[extension] = this.gl.getExtension(extension);
+          if (!this._extensions[extension]) {
+            this._extensions[extension] = this.gl.getExtension(extension);
           }
         });
     }
@@ -381,7 +381,7 @@ export default class Renderer {
    * 获取 gl 实例
    */
   get gl() {
-    return this.#gl;
+    return this._gl;
   }
 
   /**
@@ -389,17 +389,17 @@ export default class Renderer {
    */
   get attributes() {
     return {
-      dpr: this.#dpr,
-      flipY: this.#state.flipY,
-      depth: this.#depth,
-      color: this.#color,
-      antialias: this.#antialias,
-      alpha: this.#alpha,
-      stencil: this.#stencil,
-      autoClear: this.#autoClear,
-      frustumCull: this.#frustumCull,
-      premultipliedAlpha: this.#premultipliedAlpha,
-      preserveDrawingBuffer: this.#preserveDrawingBuffer,
+      dpr: this._dpr,
+      flipY: this._state.flipY,
+      depth: this._depth,
+      color: this._color,
+      antialias: this._antialias,
+      alpha: this._alpha,
+      stencil: this._stencil,
+      autoClear: this._autoClear,
+      frustumCull: this._frustumCull,
+      premultipliedAlpha: this.premultipliedAlpha,
+      preserveDrawingBuffer: this._preserveDrawingBuffer,
     };
   }
 
@@ -407,7 +407,7 @@ export default class Renderer {
    * 获取 canvas 实例
    */
   get canvas() {
-    return this.#gl.canvas;
+    return this._gl.canvas;
   }
 
   /**
@@ -428,7 +428,7 @@ export default class Renderer {
    * 获取已开启的扩展
    */
   get extensions() {
-    return this.#extensions;
+    return this._extensions;
   }
 
   /**
@@ -436,7 +436,7 @@ export default class Renderer {
    * @param key
    */
   extension(key: ExtensionKeys) {
-    return this.#extensions[key];
+    return this._extensions[key];
   }
 
   /**
@@ -453,14 +453,14 @@ export default class Renderer {
    * 获取 `renderState`
    */
   get state(): State {
-    return this.#state;
+    return this._state;
   }
 
   /**
    * 获取 `premultipliedAlpha` 配置
    */
   get premultipliedAlpha() {
-    return this.#premultipliedAlpha;
+    return this._premultipliedAlpha;
   }
 
   /**
@@ -472,8 +472,8 @@ export default class Renderer {
     this.width = width;
     this.height = height;
 
-    this.gl.canvas.width = width * this.#dpr;
-    this.gl.canvas.height = height * this.#dpr;
+    this.gl.canvas.width = width * this._dpr;
+    this.gl.canvas.height = height * this._dpr;
   }
 
   /**
@@ -484,7 +484,7 @@ export default class Renderer {
    * @param y
    */
   setViewport(width, height, x = 0, y = 0) {
-    this.#state.setViewport(width, height, x, y);
+    this._state.setViewport(width, height, x, y);
   }
 
   /**
@@ -497,10 +497,10 @@ export default class Renderer {
   getExtension(extension, method, extFunc) {
     const func = this.gl[method];
     if (method && func) return func.bind(this.gl);
-    if (!this.#extensions[extension]) {
-      this.#extensions[extension] = this.gl.getExtension(extension);
+    if (!this._extensions[extension]) {
+      this._extensions[extension] = this.gl.getExtension(extension);
     }
-    const ef = this.#extensions[extension];
+    const ef = this._extensions[extension];
     return method ? (ef ? ef[extFunc].bind(ef) : null) : ef;
   }
 
@@ -516,7 +516,7 @@ export default class Renderer {
       if (!node.visible) return true;
       if (!node.draw) return;
 
-      if (this.#frustumCull && node.frustumCulled && camera) {
+      if (this._frustumCull && node.frustumCulled && camera) {
         if (!camera.frustumIntersectsMesh(node)) return;
       }
 
@@ -534,24 +534,24 @@ export default class Renderer {
     const { scene, camera, target = null, update = true, clear } = params;
     if (target === null) {
       // make sure no render target bound so draws to canvas
-      this.#state.bindFramebuffer({
+      this._state.bindFramebuffer({
         buffer: null,
       });
-      this.setViewport(this.width * this.#dpr, this.height * this.#dpr);
+      this.setViewport(this.width * this._dpr, this.height * this._dpr);
     } else {
       // bind supplied render target and update viewport
       target.bind();
       this.setViewport(target.width, target.height);
     }
 
-    if (clear || (this.#autoClear && clear !== false)) {
+    if (clear || (this._autoClear && clear !== false)) {
       // 确保深度缓冲区写入已启用，以便可以将其清除
-      if (this.#depth && (!target || target.depth)) {
-        this.#state.enable(this.gl.DEPTH_TEST);
-        this.#state.setDepthMask(true);
+      if (this._depth && (!target || target.depth)) {
+        this._state.enable(this.gl.DEPTH_TEST);
+        this._state.setDepthMask(true);
       }
 
-      this.clear(this.#color, this.#depth, this.#stencil);
+      this.clear(this._color, this._depth, this._stencil);
     }
 
     // 更新场景矩阵
@@ -580,7 +580,7 @@ export default class Renderer {
    * @param depth 深度
    * @param stencil 模板
    */
-  clear(color = this.#color, depth = this.#depth, stencil = this.#stencil) {
+  clear(color = this._color, depth = this._depth, stencil = this._stencil) {
     let bits = 0;
 
     if (color) bits |= this.gl.COLOR_BUFFER_BIT;
@@ -602,7 +602,7 @@ export default class Renderer {
     force = true,
     vao: WithNull<WebGLVertexArrayObject | WebGLVertexArrayObjectOES> = null,
   ) {
-    this.#state.reset(force);
+    this._state.reset(force);
     this.bindVertexArray(vao);
   }
 }

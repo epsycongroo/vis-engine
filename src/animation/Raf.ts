@@ -23,27 +23,27 @@ const defaultOptions: Partial<RafOptions> = {
  */
 export default class Raf {
   public options: Partial<RafOptions>;
-  #raf: number;
-  #animating: boolean;
-  #isVisible: boolean;
+  private raf: number;
+  private _animating: boolean;
+  private _isVisible: boolean;
 
-  #clock: Clock;
+  private clock: Clock;
 
-  #callback: () => void;
+  private _callback: () => void;
 
   constructor(cb, options: Partial<RafOptions> = {}) {
     this.options = {
       ...options,
       ...defaultOptions,
     };
-    this.#clock = new Clock();
+    this.clock = new Clock();
 
     this.reset();
 
     this.onVisibilityChange = this.onVisibilityChange.bind(this);
 
-    this.#callback = () => {
-      const time = this.#clock.getElapsedTime();
+    this._callback = () => {
+      const time = this.clock.getElapsedTime();
       cb && cb(time);
     };
     if (this.options.autoStart) {
@@ -55,24 +55,24 @@ export default class Raf {
    * 获取当前页面是否可见
    */
   public get visible() {
-    return this.#isVisible;
+    return this._isVisible;
   }
 
   /**
    * 获取当前`raf` 状态
    */
   public get animating() {
-    return this.#animating;
+    return this._animating;
   }
 
   /**
    * 重置当前 `raf` 状态
    */
   public reset() {
-    this.#animating = false;
-    this.#isVisible = true;
-    if (this.#raf !== undefined) {
-      cancelAnimationFrame(this.#raf);
+    this._animating = false;
+    this._isVisible = true;
+    if (this.raf !== undefined) {
+      cancelAnimationFrame(this.raf);
     }
   }
 
@@ -80,7 +80,7 @@ export default class Raf {
    * 获取总时长
    */
   public get elapsedTime() {
-    return this.#clock.getElapsedTime();
+    return this.clock.getElapsedTime();
   }
 
   /**
@@ -88,10 +88,10 @@ export default class Raf {
    */
   public start() {
     // 如果已经启动，不需要再次启动
-    if (this.#animating) return;
+    if (this.animating) return;
 
-    this.#animating = true;
-    this.#clock.start();
+    this._animating = true;
+    this.clock.start();
     this.tick();
 
     if (typeof window !== 'undefined' && window.document) {
@@ -103,7 +103,7 @@ export default class Raf {
    * 停止 `raf`
    */
   public stop() {
-    this.#clock.stop();
+    this.clock.stop();
     this.reset();
     if (typeof window !== 'undefined' && window.document) {
       window.document.removeEventListener('visibilitychange', this.onVisibilityChange, false);
@@ -111,12 +111,12 @@ export default class Raf {
   }
 
   public tick() {
-    if (!this.#animating || !this.#isVisible) return;
+    if (!this.animating || !this._isVisible) return;
     // @tip 注意如果需要进行锁帧，需要在此处进行逻辑处理
-    this.#raf = requestAnimationFrame(() => {
+    this.raf = requestAnimationFrame(() => {
       this.tick();
     });
-    this.#callback();
+    this._callback();
   }
 
   /**
@@ -125,10 +125,10 @@ export default class Raf {
    */
   private onVisibilityChange() {
     if (typeof window !== 'undefined' && window.document) {
-      this.#isVisible = !window.document.hidden;
+      this._isVisible = !window.document.hidden;
     }
 
-    if (this.#isVisible) {
+    if (this._isVisible) {
       this.reset();
       this.start();
     }

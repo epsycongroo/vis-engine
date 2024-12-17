@@ -34,7 +34,7 @@ const tempArray: number[] = [];
 export default class Quaternion extends Vector {
   elements = new (getFloatArrayConstructor())(4);
 
-  #changeCallbacks: ICallback[] = [];
+  private _changeCallbacks: ICallback[] = [];
 
   /**
    * @param x x 坐标，默认为 0
@@ -297,8 +297,8 @@ export default class Quaternion extends Vector {
    * @param fn 回调函数
    */
   onChange(fn: ICallback) {
-    if (!this.#changeCallbacks.includes(fn)) {
-      this.#changeCallbacks.push(fn);
+    if (!this._changeCallbacks.includes(fn)) {
+      this._changeCallbacks.push(fn);
     }
   }
 
@@ -306,7 +306,7 @@ export default class Quaternion extends Vector {
    * 触发所有的回调函数
    */
   triggerChange() {
-    this.#changeCallbacks.forEach((cb) => cb());
+    this._changeCallbacks.forEach((cb) => cb());
   }
 
   /**

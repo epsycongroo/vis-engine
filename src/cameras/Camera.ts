@@ -98,32 +98,32 @@ export default class Camera extends Object3D {
   /**
    * 像机的近端面，默认值是0.1
    */
-  #near: number;
+  private _near: number;
 
   /**
    * 像机的远端面，默认值是 100
    */
-  #far: number;
+  private _far: number;
 
   /**
    * 摄像机视锥体垂直视野角度，从视图的底部到顶部，以角度来表示
    */
-  #fov: number;
+  private _fov: number;
 
   /**
    * 相机视锥体的纵横比
    */
-  #aspect: number;
+  private _aspect: number;
 
   /**
    * 相机缩放倍数
    */
-  #zoom: number;
+  private _zoom: number;
 
   /**
    * 像机视锥体配置
    */
-  #bounds: WithUndef<Bounds>;
+  private _bounds: WithUndef<Bounds>;
 
   public frustum: Matrix4;
 
@@ -146,12 +146,12 @@ export default class Camera extends Object3D {
     this.projectionViewMatrix = new ProjectionMatrix();
     this.worldPosition = new Vector3();
     this.frustum = new Matrix4();
-    this.#near = near;
-    this.#far = far;
-    this.#fov = fov;
-    this.#aspect = aspect;
-    this.#bounds = bounds;
-    this.#zoom = zoom;
+    this._near = near;
+    this._far = far;
+    this._fov = fov;
+    this._aspect = aspect;
+    this._bounds = bounds;
+    this._zoom = zoom;
     const {
       left,
       right,
@@ -170,7 +170,7 @@ export default class Camera extends Object3D {
    * 获取像机的近端面
    */
   get near() {
-    return this.#near;
+    return this._near;
   }
 
   /**
@@ -178,7 +178,7 @@ export default class Camera extends Object3D {
    * @param n near
    */
   set near(n: number) {
-    this.#near = n;
+    this._near = n;
     this.updateProjectionMatrix();
   }
 
@@ -186,7 +186,7 @@ export default class Camera extends Object3D {
    * 获取像机的远端面
    */
   get far() {
-    return this.#far;
+    return this._far;
   }
 
   /**
@@ -194,7 +194,7 @@ export default class Camera extends Object3D {
    * @param f
    */
   set far(f: number) {
-    this.#far = f;
+    this._far = f;
     this.updateProjectionMatrix();
   }
 
@@ -202,7 +202,7 @@ export default class Camera extends Object3D {
    * 获取摄像机视锥体垂直视野角度
    */
   get fov() {
-    return this.#fov;
+    return this._fov;
   }
 
   /**
@@ -210,7 +210,7 @@ export default class Camera extends Object3D {
    * @param f 角度值
    */
   set fov(f: number) {
-    this.#fov = f;
+    this._fov = f;
     this.updateProjectionMatrix();
   }
 
@@ -218,7 +218,7 @@ export default class Camera extends Object3D {
    * 获取相机视锥体的纵横比
    */
   get aspect() {
-    return this.#aspect;
+    return this._aspect;
   }
 
   /**
@@ -226,7 +226,7 @@ export default class Camera extends Object3D {
    * @param aspect
    */
   set aspect(aspect: number) {
-    this.#aspect = aspect;
+    this._aspect = aspect;
     this.updateProjectionMatrix();
   }
 
@@ -234,7 +234,7 @@ export default class Camera extends Object3D {
    * 获取相机的缩放倍数
    */
   get zoom() {
-    return this.#zoom;
+    return this._zoom;
   }
 
   /**
@@ -242,7 +242,7 @@ export default class Camera extends Object3D {
    * @param zoom
    */
   set zoom(zoom: number) {
-    this.#zoom = zoom;
+    this._zoom = zoom;
     this.updateProjectionMatrix();
   }
 
@@ -250,7 +250,7 @@ export default class Camera extends Object3D {
    * 获取像机视锥体的范围
    */
   get bounds() {
-    return this.#bounds;
+    return this._bounds;
   }
 
   /**
@@ -258,7 +258,7 @@ export default class Camera extends Object3D {
    * @param bounds
    */
   set bounds(bounds: WithUndef<Bounds>) {
-    this.#bounds = bounds;
+    this._bounds = bounds;
     this.updateProjectionMatrix();
   }
 
@@ -270,10 +270,10 @@ export default class Camera extends Object3D {
    * @param far
    */
   perspective(fov = this.fov, aspect = this.aspect, near = this.near, far = this.far) {
-    this.#fov = fov;
-    this.#aspect = aspect;
-    this.#near = near;
-    this.#far = far;
+    this._fov = fov;
+    this._aspect = aspect;
+    this._near = near;
+    this._far = far;
     this.projectionMatrix.fromPerspective(fov, aspect, near, far);
     this.cameraType = 'perspective';
     // this.projectionMatrix.frustum(this.frustum, this.bounds.left, this.bounds.right, this.bounds.top, this.bounds.bottom, this.near, this.far);
@@ -290,7 +290,7 @@ export default class Camera extends Object3D {
    * @param zoom
    */
   orthographic(left, right, top, bottom, near = this.near, far = this.far, zoom = 1) {
-    this.#bounds = {
+    this._bounds = {
       left,
       right,
       top,
@@ -307,7 +307,7 @@ export default class Camera extends Object3D {
       far,
     );
     this.cameraType = 'orthographic';
-    this.projectionMatrix.frustum(this.frustum, this.#bounds.left, this.#bounds.right, this.#bounds.top, this.#bounds.bottom, this.#near, this.#far);
+    this.projectionMatrix.frustum(this.frustum, this._bounds.left, this._bounds.right, this._bounds.top, this._bounds.bottom, this._near, this._far);
   }
 
   /**

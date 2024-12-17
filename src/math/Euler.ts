@@ -19,9 +19,9 @@ export type ANGLE_ORDER = 'zyx' | 'xyz' | 'yxz' | 'yzx' | 'zxy' | 'xzy';
 export default class Euler extends Vector {
   elements = new (getFloatArrayConstructor())(3);
 
-  #changeCallbacks: ICallback[] = [];
+  private _changeCallbacks: ICallback[] = [];
 
-  #order: ANGLE_ORDER = 'xyz';
+  private _order: ANGLE_ORDER = 'xyz';
 
   /**
    * @param x 用弧度表示x轴旋转量，默认值是 0
@@ -35,7 +35,7 @@ export default class Euler extends Vector {
     v[0] = x;
     v[1] = y;
     v[2] = z;
-    this.#order = order;
+    this._order = order;
   }
 
   /**
@@ -93,7 +93,7 @@ export default class Euler extends Vector {
    * 获取旋转顺序
    */
   get order() {
-    return this.#order;
+    return this._order;
   }
 
   /**
@@ -101,7 +101,7 @@ export default class Euler extends Vector {
    * @param order
    */
   set order(order) {
-    this.#order = order;
+    this._order = order;
     this.triggerChange();
   }
 
@@ -171,7 +171,7 @@ export default class Euler extends Vector {
    * @param order
    * @param update
    */
-  fromRotationMatrix(m: Matrix4, order = this.#order, update = true) {
+  fromRotationMatrix(m: Matrix4, order = this._order, update = true) {
     const te = m.toArray();
     const m11 = te[0];
     const m12 = te[4];
@@ -253,7 +253,7 @@ export default class Euler extends Vector {
       default:
         throw new Error('Unknown Euler angle order');
     }
-    this.#order = order;
+    this._order = order;
     if (update) {
       this.triggerChange();
     }
@@ -286,7 +286,7 @@ export default class Euler extends Vector {
    * @param vec3
    * @param order
    */
-  fromVector3(vec3, order = this.#order) {
+  fromVector3(vec3, order = this._order) {
     return this.set(vec3.x, vec3.y, vec3.z, order);
   }
 
@@ -322,11 +322,11 @@ export default class Euler extends Vector {
    * @param z
    * @param order
    */
-  set(x, y, z, order = this.#order) {
+  set(x, y, z, order = this._order) {
     this.elements[0] = x;
     this.elements[1] = y;
     this.elements[2] = z;
-    this.#order = order;
+    this._order = order;
     this.triggerChange();
     return this;
   }
@@ -348,7 +348,7 @@ export default class Euler extends Vector {
       this.elements[i] = euler.elements[i];
     }
 
-    this.#order = euler.order;
+    this._order = euler.order;
 
     this.triggerChange();
     return this;
@@ -367,8 +367,8 @@ export default class Euler extends Vector {
    * @param cb 回调函数
    */
   onChange(cb: ICallback) {
-    if (!this.#changeCallbacks.includes(cb)) {
-      this.#changeCallbacks.push(cb);
+    if (!this._changeCallbacks.includes(cb)) {
+      this._changeCallbacks.push(cb);
     }
   }
 
@@ -376,7 +376,7 @@ export default class Euler extends Vector {
    * 触发所有的回调函数
    */
   triggerChange() {
-    this.#changeCallbacks.forEach((f) => f());
+    this._changeCallbacks.forEach((f) => f());
   }
 
   /**
